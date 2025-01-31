@@ -35,6 +35,37 @@ def check_mst(adj_mat: np.ndarray,
             total += mst[i, j]
     assert approx_equal(total, expected_weight), 'Proposed MST has incorrect expected weight'
 
+    # Check if MST has exactly (V - 1) edges
+    num_edges = np.count_nonzero(mst) // 2
+    num_vertices = mst.shape[0]
+    if num_edges > num_vertices - 1:
+        raise ValueError("The MST is cyclic (too many edges).")
+    assert num_edges == num_vertices - 1, 'MST does not have V-1 edges (Graph is either disconnected or contains a cycle).'
+
+
+    #Check if MST is heavier than the original graph
+    assert np.sum(mst) / 2 <= np.sum(adj_mat) / 2, 'MST weight is too high.'
+
+
+    # Verify MST connectivity (every vertex must be reachable)
+    num_vertices = mst.shape[0]
+    visited = [] 
+    stack = [0]
+    while stack:
+        node = stack.pop()
+        if node not in visited:
+            visited.append(node)
+            # For the neighbors of the current node
+            neighbors = []
+            for i in range(len(mst[node])):
+                if mst[node][i] >0:
+                    neighbors.append(i)
+            # Only add unvisted neighbors to the stack
+            for neighbor in neighbors:
+                if neighbor not in visited:
+                    stack.append(neighbor)
+    assert len(visited) == num_vertices, 'MST is not connected'
+
 
 def test_mst_small():
     """
@@ -71,4 +102,11 @@ def test_mst_student():
     TODO: Write at least one unit test for MST construction.
     
     """
-    pass
+    adj_mat = np.array([
+        [0, 2, 3, 0],
+        [2, 0, 1, 4],
+        [3, 1, 0, 5],
+        [0, 4, 5, 0]])
+    g = Graph(adj_mat)
+    g.construct_mst()
+    check_mst(g.adj_mat, g.mst, expected_weight=7)

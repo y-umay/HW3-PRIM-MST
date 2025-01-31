@@ -41,4 +41,29 @@ class Graph:
         `heapify`, `heappop`, and `heappush` functions.
 
         """
-        self.mst = None
+        num_vertices = len(self.adj_mat)
+        self.mst = np.zeros((num_vertices, num_vertices))
+
+        visited = [False] * num_vertices
+        neighbors = []
+        
+        heapq.heappush(neighbors, (0, 0, 0))
+        # note this assumes graph is fully connected
+        # won't work if graph is not fully connected
+        while len(neighbors) > 0:
+            edge_weight, parent, unvisited = heapq.heappop(neighbors)
+            
+            if visited[unvisited]:
+                continue
+            
+            visited[unvisited] = True
+            self.mst[unvisited, parent] = edge_weight
+            self.mst[parent, unvisited] = edge_weight
+            
+            for vertex in range(num_vertices):
+                if self.adj_mat[unvisited, vertex] > 0 and not visited[vertex]:
+                    edge_weight = self.adj_mat[unvisited, vertex]
+                    heapq.heappush(neighbors,
+                                   (edge_weight, unvisited, vertex))
+
+    # self.mst = None
